@@ -3,590 +3,812 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UK Workplace Charging Scheme — Eligibility Checker</title>
+    <title>Workplace Charging Scheme — Eligibility Checker</title>
+    <meta name="description" content="Check your eligibility for the UK Government Workplace Charging Scheme grant. Up to £500 per socket, 75% of installation costs covered.">
+    <meta name="author" content="Voqa">
     <link rel="icon" href="https://www.voqa.com/favicon.ico" type="image/x-icon">
-    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     <style>
-        body { font-family: 'Segoe UI', system-ui, sans-serif; }
-        .step { transition: all 0.2s ease; }
-        .check-pass  { color: #16a34a; }
-        .check-fail  { color: #dc2626; }
-        .check-warn  { color: #d97706; }
-        .progress-bar { transition: width 0.4s ease; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { overflow-x: hidden; }
+
+        :root {
+            --primary:      #005C80;
+            --primary-dark: #004A6B;
+            --accent:       #F7D7BC;
+            --accent-light: #F8D4B4;
+            --success:      #098C47;
+            --danger:       #DC2626;
+            --warn:         #D97706;
+            --text-dark:    #0E215A;
+            --text-light:   #ffffff;
+            --bg-light:     #f8f9fa;
+            --border:       #E8F0F0;
+        }
+
+        body {
+            font-family: 'Red Hat Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            min-height: 100vh;
+            color: var(--text-light);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(247,215,188,0.10) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0,92,128,0.10)    0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(255,255,255,0.05) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: rgba(0,92,128,0.95);
+            backdrop-filter: blur(20px);
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            min-height: 180px;
+            animation: slideDown 0.6s cubic-bezier(0.34,1.56,0.64,1);
+        }
+
+        @keyframes slideDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to   { transform: translateY(0);    opacity: 1; }
+        }
+
+        .back-link {
+            position: absolute;
+            top: 10px; left: 40px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            color: rgba(255,255,255,0.9);
+            padding: 10px 16px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+        }
+        .back-link:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+
+        .header-content {
+            position: absolute;
+            left: 0; right: 0;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .header-content a { pointer-events: all; }
+
+        .header-title {
+            font-size: clamp(22px, 4vw, 34px);
+            font-weight: 800;
+            color: var(--text-light);
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.2;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .header-subtitle {
+            font-size: 15px;
+            color: rgba(255,255,255,0.75);
+            font-weight: 400;
+            animation: fadeInUp 0.8s ease-out 0.1s both;
+        }
+
+        .header-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(45deg, var(--accent), var(--accent-light));
+            color: var(--primary);
+            padding: 14px 24px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+            position: relative;
+            overflow: hidden;
+        }
+        .header-cta::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 0; height: 0;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.5);
+            transform: translate(-50%,-50%);
+            transition: width 0.6s, height 0.6s;
+        }
+        .header-cta:hover::before { width: 300px; height: 300px; }
+        .header-cta:hover { transform: translateY(-2px) scale(1.04); }
+
+        /* ── Layout ── */
+        .container {
+            max-width: 760px;
+            margin: 0 auto;
+            padding: 40px 20px 60px;
+            position: relative;
+            z-index: 2;
+            margin-top: 200px;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ── Cards ── */
+        .card {
+            background: rgba(255,255,255,0.98);
+            color: var(--text-dark);
+            padding: 32px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.4s ease;
+        }
+        .card:hover::before { transform: scaleX(1); }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 16px 40px rgba(0,0,0,0.12); }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 6px;
+            letter-spacing: -0.3px;
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        /* ── Stat row ── */
+        .stat-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-box {
+            background: #f0f7ff;
+            border: 1px solid #dbeafe;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+        .stat-value { font-size: 26px; font-weight: 800; color: var(--primary); line-height: 1; }
+        .stat-label { font-size: 11px; color: #6b7280; margin-top: 4px; font-weight: 500; }
+
+        /* ── Progress ── */
+        .progress-wrap { margin-bottom: 20px; }
+        .progress-meta { display: flex; justify-content: space-between; font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 6px; }
+        .progress-track { height: 6px; background: rgba(255,255,255,0.2); border-radius: 999px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
+
+        /* ── Question label ── */
+        .q-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+        .q-title { font-size: 17px; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
+        .q-hint  { font-size: 13px; color: #6b7280; margin-bottom: 18px; line-height: 1.5; }
+
+        /* ── Radio options ── */
+        .options { display: flex; flex-direction: column; gap: 10px; }
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+            background: white;
+        }
+        .option:hover { border-color: var(--primary); background: #f0f7ff; transform: translateX(4px); }
+        .option input[type=radio] { accent-color: var(--primary); width: 18px; height: 18px; flex-shrink: 0; }
+
+        /* ── Number input ── */
+        .num-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+        .num-input {
+            width: 100px;
+            padding: 14px 16px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 700;
+            text-align: center;
+            color: var(--text-dark);
+            background: white;
+            transition: all 0.25s ease;
+            font-family: inherit;
+        }
+        .num-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(0,92,128,0.1); }
+        .num-label { font-size: 14px; color: #6b7280; font-weight: 500; }
+
+        /* ── Buttons ── */
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            margin-top: 20px;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,92,128,0.3); }
+
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            padding: 14px 28px;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 700;
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.25); transform: translateY(-2px); }
+
+        /* ── Verdict banner ── */
+        .verdict {
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        .verdict-pass { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 2px solid #86efac; }
+        .verdict-fail { background: linear-gradient(135deg, #fef2f2, #fee2e2); border: 2px solid #fca5a5; }
+        .verdict-icon { font-size: 40px; line-height: 1; flex-shrink: 0; }
+        .verdict-title { font-size: 19px; font-weight: 800; margin-bottom: 4px; }
+        .verdict-pass .verdict-title { color: #166534; }
+        .verdict-fail .verdict-title { color: #991b1b; }
+        .verdict-body { font-size: 14px; line-height: 1.6; }
+        .verdict-pass .verdict-body { color: #166534; }
+        .verdict-fail .verdict-body { color: #991b1b; }
+
+        /* ── Result cards ── */
+        .result-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+        .result-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            border: 2px solid transparent;
+            transition: border-color 0.3s ease, transform 0.3s ease;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        .result-card:hover { border-color: var(--accent); transform: translateY(-4px); }
+        .result-card-value { font-size: 32px; font-weight: 800; color: var(--accent); line-height: 1; margin-bottom: 6px; }
+        .result-card-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.9; }
+
+        /* ── Checks list ── */
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 14px;
+            animation: fadeInUp 0.4s ease-out;
+        }
+        .check-item:last-child { border-bottom: none; }
+        .check-icon { font-size: 18px; line-height: 1.2; flex-shrink: 0; }
+        .check-name { font-weight: 700; color: var(--text-dark); }
+        .check-detail-pass { color: #166534; }
+        .check-detail-fail { color: #991b1b; }
+        .check-detail-warn { color: #92400e; }
+
+        /* ── Next steps ── */
+        .next-steps-card {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+        .next-steps-title { font-size: 16px; font-weight: 800; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .next-steps-list { list-style: none; }
+        .next-steps-list li {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .next-steps-list li:last-child { border-bottom: none; }
+        .step-num {
+            width: 24px; height: 24px;
+            background: var(--accent);
+            color: var(--primary);
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .next-steps-list a { color: var(--accent); text-decoration: underline; }
+
+        /* ── Action row ── */
+        .action-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+        /* ── Footer ── */
+        footer {
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255,255,255,0.45);
+            padding: 24px 20px 40px;
+            position: relative;
+            z-index: 2;
+        }
+        footer a { color: rgba(255,255,255,0.65); text-decoration: underline; }
+
+        /* ── Hidden util ── */
+        .hidden { display: none !important; }
+
+        @media (max-width: 520px) {
+            .header { min-height: 200px; }
+            .container { margin-top: 220px; }
+            .stat-row { grid-template-columns: repeat(3,1fr); gap: 8px; }
+            .stat-value { font-size: 20px; }
+            .result-grid { grid-template-columns: 1fr; }
+            .back-link { font-size: 12px; padding: 8px 12px; }
+        }
     </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body>
 
-    <!-- Header -->
-    <header class="bg-white border-b border-gray-200 shadow-sm">
-        <div class="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-bold text-gray-900">Workplace Charging Scheme</h1>
-                <p class="text-sm text-gray-500">UK Government Grant Eligibility Checker</p>
-            </div>
-            <div class="text-right">
-                <span class="inline-block bg-green-100 text-green-800 text-xs font-semibold px-3 py-1 rounded-full">Up to £500/socket</span>
-            </div>
+    <header class="header">
+        <a href="https://tools.voqa.com" class="back-link">← All Tools</a>
+        <div class="header-content">
+            <h1 class="header-title">Workplace Charging Scheme</h1>
+            <p class="header-subtitle">UK Government Grant Eligibility Checker</p>
+            <a href="https://www.voqa.com/contact" class="header-cta">
+                ⚡ Get expert installation advice
+            </a>
         </div>
     </header>
 
-    <main class="max-w-3xl mx-auto px-4 py-8">
+    <div class="container">
 
-        <!-- Intro card (shown before start) -->
-        <div id="intro" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-2">Check your eligibility in 2 minutes</h2>
-            <p class="text-gray-600 text-sm mb-4">
-                The <strong>Workplace Charging Scheme (WCS)</strong> is an OZEV grant that covers up to 75% of the purchase
+        <!-- Intro -->
+        <div id="intro" class="card">
+            <div class="card-title">Check your eligibility in 2 minutes</div>
+            <p class="card-subtitle">
+                The <strong>Workplace Charging Scheme (WCS)</strong> is an OZEV grant covering up to 75% of the purchase
                 and installation cost of EV charge points — up to <strong>£500 per socket</strong>, across a maximum of
-                <strong>40 sockets</strong>. Answer the questions below to find out if you qualify and estimate your grant value.
+                <strong>40 sockets</strong>. Answer 8 quick questions to find out if you qualify.
             </p>
-            <div class="grid grid-cols-3 gap-3 mb-5 text-center text-sm">
-                <div class="bg-blue-50 rounded-lg p-3">
-                    <div class="text-2xl font-bold text-blue-700">£500</div>
-                    <div class="text-gray-600 text-xs mt-1">max grant per socket</div>
-                </div>
-                <div class="bg-blue-50 rounded-lg p-3">
-                    <div class="text-2xl font-bold text-blue-700">75%</div>
-                    <div class="text-gray-600 text-xs mt-1">of eligible costs covered</div>
-                </div>
-                <div class="bg-blue-50 rounded-lg p-3">
-                    <div class="text-2xl font-bold text-blue-700">40</div>
-                    <div class="text-gray-600 text-xs mt-1">maximum sockets</div>
-                </div>
+            <div class="stat-row">
+                <div class="stat-box"><div class="stat-value">£500</div><div class="stat-label">max per socket</div></div>
+                <div class="stat-box"><div class="stat-value">75%</div><div class="stat-label">costs covered</div></div>
+                <div class="stat-box"><div class="stat-value">40</div><div class="stat-label">max sockets</div></div>
             </div>
-            <button onclick="startChecker()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg text-sm">
+            <button onclick="startChecker()" class="btn-primary" style="width:100%; justify-content:center;">
                 Start Eligibility Check →
             </button>
         </div>
 
-        <!-- Progress bar -->
-        <div id="progress-container" class="hidden mb-5">
-            <div class="flex justify-between text-xs text-gray-500 mb-1">
+        <!-- Progress (shown during questions) -->
+        <div id="progress-wrap" class="progress-wrap hidden">
+            <div class="progress-meta">
                 <span id="progress-label">Question 1 of 8</span>
                 <span id="progress-pct">0%</span>
             </div>
-            <div class="w-full bg-gray-200 rounded-full h-2">
-                <div id="progress-bar" class="progress-bar bg-indigo-600 h-2 rounded-full" style="width:0%"></div>
+            <div class="progress-track">
+                <div id="progress-fill" class="progress-fill" style="width:0%"></div>
             </div>
         </div>
 
-        <!-- Question steps -->
-        <div id="steps-container" class="hidden space-y-4">
+        <!-- Questions -->
+        <div id="steps-wrap">
 
-            <!-- Q1: Organisation type -->
-            <div id="step-1" class="step bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Question 1</p>
-                <h3 class="text-base font-semibold text-gray-900 mb-1">What type of organisation are you?</h3>
-                <p class="text-sm text-gray-500 mb-4">The WCS is open to businesses, charities, and public sector bodies registered in the UK.</p>
-                <div class="space-y-2" id="q1-options">
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q1" value="business" onchange="handleQ1(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">Private business (limited company, sole trader, partnership, LLP)</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q1" value="charity" onchange="handleQ1(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">Registered charity</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q1" value="public" onchange="handleQ1(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">Public sector body (NHS, council, university, etc.)</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q1" value="residential" onchange="handleQ1(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">Residential property / private individual</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q1" value="unsure" onchange="handleQ1(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">Not sure</span>
-                    </label>
+            <div id="step-1" class="card hidden">
+                <div class="q-label">Question 1 of 8</div>
+                <div class="q-title">What type of organisation are you?</div>
+                <div class="q-hint">The WCS is open to businesses, charities, and public sector bodies registered in the UK.</div>
+                <div class="options">
+                    <label class="option"><input type="radio" name="q1" value="business"    onchange="handleQ1(this)"> Private business (limited company, sole trader, partnership, LLP)</label>
+                    <label class="option"><input type="radio" name="q1" value="charity"     onchange="handleQ1(this)"> Registered charity</label>
+                    <label class="option"><input type="radio" name="q1" value="public"      onchange="handleQ1(this)"> Public sector body (NHS, council, university, etc.)</label>
+                    <label class="option"><input type="radio" name="q1" value="residential" onchange="handleQ1(this)"> Residential property / private individual</label>
                 </div>
             </div>
 
-            <!-- Q2: UK registration -->
-            <div id="step-2" class="step bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden">
-                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Question 2</p>
-                <h3 class="text-base font-semibold text-gray-900 mb-1">Is your organisation registered and based in the UK?</h3>
-                <p class="text-sm text-gray-500 mb-4">You must have a UK registered address. The installation must also be at a UK site.</p>
-                <div class="space-y-2">
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q2" value="yes" onchange="handleQ2(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">Yes — UK registered with a UK installation site</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q2" value="no" onchange="handleQ2(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">No — overseas or installation outside the UK</span>
-                    </label>
+            <div id="step-2" class="card hidden">
+                <div class="q-label">Question 2 of 8</div>
+                <div class="q-title">Is your organisation registered and based in the UK?</div>
+                <div class="q-hint">You must have a UK registered address. The installation must also be at a UK site.</div>
+                <div class="options">
+                    <label class="option"><input type="radio" name="q2" value="yes" onchange="handleQ2(this)"> Yes — UK registered with a UK installation site</label>
+                    <label class="option"><input type="radio" name="q2" value="no"  onchange="handleQ2(this)"> No — overseas or installation outside the UK</label>
                 </div>
             </div>
 
-            <!-- Q3: Off-street parking -->
-            <div id="step-3" class="step bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden">
-                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Question 3</p>
-                <h3 class="text-base font-semibold text-gray-900 mb-1">Do you have dedicated off-street parking at your site?</h3>
-                <p class="text-sm text-gray-500 mb-4">Charge points must be installed in off-street parking associated with your business premises — a car park, yard, or similar. On-street parking does not qualify.</p>
-                <div class="space-y-2">
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q3" value="yes" onchange="handleQ3(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">Yes — we have dedicated off-street parking</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q3" value="shared" onchange="handleQ3(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">Shared car park (e.g. shared with other tenants in a building)</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q3" value="no" onchange="handleQ3(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">No — only on-street or public parking available</span>
-                    </label>
+            <div id="step-3" class="card hidden">
+                <div class="q-label">Question 3 of 8</div>
+                <div class="q-title">Do you have dedicated off-street parking at your site?</div>
+                <div class="q-hint">Charge points must be installed in off-street parking associated with your business premises — a car park, yard, or similar. On-street parking does not qualify.</div>
+                <div class="options">
+                    <label class="option"><input type="radio" name="q3" value="yes"    onchange="handleQ3(this)"> Yes — dedicated off-street parking</label>
+                    <label class="option"><input type="radio" name="q3" value="shared" onchange="handleQ3(this)"> Shared car park (e.g. shared with other tenants in a building)</label>
+                    <label class="option"><input type="radio" name="q3" value="no"     onchange="handleQ3(this)"> No — only on-street or public parking available</label>
                 </div>
             </div>
 
-            <!-- Q4: Permission to install -->
-            <div id="step-4" class="step bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden">
-                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Question 4</p>
-                <h3 class="text-base font-semibold text-gray-900 mb-1">Do you own the site, or do you have landlord permission to install charge points?</h3>
-                <p class="text-sm text-gray-500 mb-4">You must either own the parking area or have written permission from your landlord to install charge points.</p>
-                <div class="space-y-2">
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q4" value="own" onchange="handleQ4(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">We own the site / parking area</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q4" value="permission" onchange="handleQ4(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">We lease / rent — and have (or can get) landlord permission</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q4" value="no" onchange="handleQ4(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">We lease / rent — and landlord permission is unlikely</span>
-                    </label>
+            <div id="step-4" class="card hidden">
+                <div class="q-label">Question 4 of 8</div>
+                <div class="q-title">Do you own the site, or can you get landlord permission to install?</div>
+                <div class="q-hint">You must either own the parking area or have written permission from your landlord before you can apply.</div>
+                <div class="options">
+                    <label class="option"><input type="radio" name="q4" value="own"        onchange="handleQ4(this)"> We own the site / parking area</label>
+                    <label class="option"><input type="radio" name="q4" value="permission" onchange="handleQ4(this)"> We lease — and have (or can get) landlord permission</label>
+                    <label class="option"><input type="radio" name="q4" value="no"         onchange="handleQ4(this)"> We lease — and landlord permission is unlikely</label>
                 </div>
             </div>
 
-            <!-- Q5: Eligible vehicles -->
-            <div id="step-5" class="step bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden">
-                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Question 5</p>
-                <h3 class="text-base font-semibold text-gray-900 mb-1">Does your organisation use eligible vehicles for business purposes?</h3>
-                <p class="text-sm text-gray-500 mb-4">At least one eligible vehicle must be used in connection with the business. Eligible types include: cars, motorcycles, mopeds, small vans (&lt;3.5t), large vans (3.5–12t), taxis / private hire vehicles, minibuses, and HGVs.</p>
-                <div class="space-y-2">
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q5" value="yes" onchange="handleQ5(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">Yes — staff or fleet use eligible vehicles for work</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q5" value="no" onchange="handleQ5(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">No — no eligible vehicles used for business purposes</span>
-                    </label>
+            <div id="step-5" class="card hidden">
+                <div class="q-label">Question 5 of 8</div>
+                <div class="q-title">Does your organisation use eligible vehicles for business purposes?</div>
+                <div class="q-hint">At least one eligible vehicle must be used in connection with the business. Eligible types: cars, motorcycles, mopeds, vans, taxis / PHVs, minibuses, HGVs.</div>
+                <div class="options">
+                    <label class="option"><input type="radio" name="q5" value="yes" onchange="handleQ5(this)"> Yes — staff or fleet vehicles are used for work</label>
+                    <label class="option"><input type="radio" name="q5" value="no"  onchange="handleQ5(this)"> No — no eligible vehicles used for business purposes</label>
                 </div>
             </div>
 
-            <!-- Q6: Existing charge points -->
-            <div id="step-6" class="step bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden">
-                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Question 6</p>
-                <h3 class="text-base font-semibold text-gray-900 mb-1">Have you previously claimed WCS grant funding at this site?</h3>
-                <p class="text-sm text-gray-500 mb-4">You cannot claim for charge points already installed before your application. However, you may claim additional sockets if you have not yet reached the 40-socket limit.</p>
-                <div class="space-y-2">
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q6" value="no" onchange="handleQ6(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">No — this will be our first WCS claim</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q6" value="partial" onchange="handleQ6(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">Yes — we have claimed before but have fewer than 40 sockets installed</span>
-                    </label>
-                    <label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="q6" value="maxed" onchange="handleQ6(this)" class="text-indigo-600">
-                        <span class="text-sm text-gray-800">Yes — we already have 40 or more sockets via WCS</span>
-                    </label>
+            <div id="step-6" class="card hidden">
+                <div class="q-label">Question 6 of 8</div>
+                <div class="q-title">Have you previously claimed WCS grant funding at this site?</div>
+                <div class="q-hint">You cannot claim for charge points already installed before your application. You may claim more sockets if you have not yet reached the 40-socket limit.</div>
+                <div class="options">
+                    <label class="option"><input type="radio" name="q6" value="no"      onchange="handleQ6(this)"> No — this will be our first WCS claim</label>
+                    <label class="option"><input type="radio" name="q6" value="partial" onchange="handleQ6(this)"> Yes — we have claimed before but have fewer than 40 sockets</label>
+                    <label class="option"><input type="radio" name="q6" value="maxed"   onchange="handleQ6(this)"> Yes — we already have 40 or more WCS-funded sockets</label>
                 </div>
             </div>
 
-            <!-- Q7: Sockets already claimed -->
-            <div id="step-7" class="step bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden">
-                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Question 7</p>
-                <h3 class="text-base font-semibold text-gray-900 mb-1">How many sockets have you previously claimed WCS funding for?</h3>
-                <p class="text-sm text-gray-500 mb-4">Enter the number of sockets you already have under the WCS scheme. This determines how many more you can apply for (maximum 40 total).</p>
-                <div class="flex items-center gap-3">
-                    <input type="number" id="existing-sockets" min="0" max="39" value="0"
-                        class="w-28 p-2 border border-gray-300 rounded-lg text-sm text-center"
-                        oninput="handleExistingSockets(this)" />
-                    <span class="text-sm text-gray-600">sockets already funded</span>
+            <div id="step-7" class="card hidden">
+                <div class="q-label">Question 7 of 8</div>
+                <div class="q-title">How many sockets have you already claimed WCS funding for?</div>
+                <div class="q-hint">This determines how many more you can apply for (40 maximum in total).</div>
+                <div class="num-row">
+                    <input type="number" id="existing-sockets" class="num-input" min="0" max="39" value="0">
+                    <span class="num-label">sockets already funded</span>
                 </div>
-                <button onclick="advanceFromQ7()" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-5 rounded-lg">
-                    Continue →
-                </button>
+                <button onclick="advanceFromQ7()" class="btn-primary">Continue →</button>
             </div>
 
-            <!-- Q8: Number of new sockets -->
-            <div id="step-8" class="step bg-white rounded-xl shadow-sm border border-gray-200 p-6 hidden">
-                <p class="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">Question 8</p>
-                <h3 class="text-base font-semibold text-gray-900 mb-1">How many new charge point sockets are you planning to install?</h3>
-                <p class="text-sm text-gray-500 mb-4" id="q8-hint">Each socket is eligible for a grant of up to £500 (75% of cost). You can apply for up to 40 sockets in total across all WCS claims.</p>
-                <div class="flex items-center gap-3">
-                    <input type="number" id="new-sockets" min="1" max="40" value="4"
-                        class="w-28 p-2 border border-gray-300 rounded-lg text-sm text-center"
-                        oninput="handleNewSockets(this)" />
-                    <span class="text-sm text-gray-600">new sockets</span>
+            <div id="step-8" class="card hidden">
+                <div class="q-label">Question 8 of 8</div>
+                <div class="q-title">How many new sockets are you planning to install?</div>
+                <div class="q-hint" id="q8-hint">Each socket is eligible for a grant of up to £500 (75% of cost). You can apply for up to 40 sockets in total across all WCS claims.</div>
+                <div class="num-row">
+                    <input type="number" id="new-sockets" class="num-input" min="1" max="40" value="4">
+                    <span class="num-label">new sockets</span>
                 </div>
-                <button onclick="showResults()" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold py-2 px-5 rounded-lg">
-                    See Results →
-                </button>
+                <button onclick="showResults()" class="btn-primary">See Results →</button>
             </div>
 
         </div>
 
-        <!-- Results panel -->
-        <div id="results" class="hidden space-y-4">
+        <!-- Results -->
+        <div id="results" class="hidden">
 
-            <div id="result-verdict" class="rounded-xl p-6 border-2"></div>
+            <div id="verdict-banner"></div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 class="font-semibold text-gray-900 mb-4">Eligibility Summary</h3>
-                <div id="result-checks" class="space-y-2 text-sm"></div>
+            <div id="grant-cards" class="result-grid hidden"></div>
+
+            <div class="card">
+                <div class="card-title">Eligibility Summary</div>
+                <div id="checks-list"></div>
             </div>
 
-            <div id="grant-estimate" class="hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 class="font-semibold text-gray-900 mb-4">Grant Estimate</h3>
-                <div id="grant-detail"></div>
-                <p class="text-xs text-gray-500 mt-4">Grant amount is indicative. Final grant is 75% of actual eligible costs, capped at £500 per socket. You must use an <a href="https://www.gov.uk/government/publications/workplace-charging-scheme-authorised-installers" target="_blank" class="text-indigo-600 underline">OZEV-authorised installer</a>.</p>
+            <div id="next-steps-wrap" class="next-steps-card hidden">
+                <div class="next-steps-title">Next Steps</div>
+                <ul class="next-steps-list" id="next-steps-list"></ul>
             </div>
 
-            <div class="bg-blue-50 rounded-xl border border-blue-200 p-5">
-                <h3 class="font-semibold text-blue-900 mb-2 text-sm">Next Steps</h3>
-                <div id="next-steps" class="text-sm text-blue-800 space-y-1"></div>
+            <div class="action-row">
+                <button onclick="resetChecker()" class="btn-secondary">← Start Again</button>
+                <button onclick="window.print()" class="btn-secondary">🖨 Print / Save</button>
             </div>
-
-            <div class="flex gap-3">
-                <button onclick="resetChecker()" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg text-sm">
-                    Start Again
-                </button>
-                <button onclick="window.print()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-lg text-sm">
-                    Print / Save
-                </button>
-            </div>
-
         </div>
 
-    </main>
+    </div>
 
-    <footer class="max-w-3xl mx-auto px-4 py-6 text-xs text-gray-400 text-center border-t border-gray-200 mt-4">
-        This tool provides indicative guidance only. Eligibility criteria are subject to change by OZEV.
-        Always verify your eligibility at <a href="https://www.gov.uk/government/collections/workplace-charging-scheme" target="_blank" class="underline">gov.uk</a> before applying.
+    <footer>
+        This tool provides indicative guidance only. Eligibility criteria are subject to change by OZEV.<br>
+        Always verify at <a href="https://www.gov.uk/government/collections/workplace-charging-scheme" target="_blank">gov.uk</a> before applying.
         Grant figures reflect the scheme as updated April 2026.
     </footer>
 
     <script>
-        const TOTAL_QUESTIONS = 8;
-        const MAX_SOCKETS = 40;
-        const GRANT_PER_SOCKET = 500;
-        const GRANT_RATE = 0.75;
+        const MAX_SOCKETS    = 40;
+        const GRANT_CAP      = 500;
+        const GRANT_RATE     = 0.75;
+        const TOTAL_STEPS    = 8;
 
-        let answers = {
-            orgType: null,
-            ukRegistered: null,
-            parking: null,
-            permission: null,
-            vehicles: null,
-            previousClaim: null,
-            existingSockets: 0,
-            newSockets: 4
-        };
-
-        let currentStep = 1;
+        let answers = { orgType: null, ukReg: null, parking: null, permission: null, vehicles: null, prevClaim: null, existing: 0, newSockets: 4 };
         let disqualified = false;
-        let disqualifiedStep = null;
+        let disqStep = null;
 
         function startChecker() {
             document.getElementById('intro').classList.add('hidden');
-            document.getElementById('progress-container').classList.remove('hidden');
-            document.getElementById('steps-container').classList.remove('hidden');
+            document.getElementById('progress-wrap').classList.remove('hidden');
             showStep(1);
-            updateProgress(1);
         }
 
         function showStep(n) {
-            for (let i = 1; i <= TOTAL_QUESTIONS; i++) {
+            for (let i = 1; i <= TOTAL_STEPS; i++) {
                 document.getElementById(`step-${i}`).classList.add('hidden');
             }
             document.getElementById(`step-${n}`).classList.remove('hidden');
-            currentStep = n;
-            updateProgress(n);
+            const pct = Math.round(((n - 1) / TOTAL_STEPS) * 100);
+            document.getElementById('progress-label').textContent = `Question ${n} of ${TOTAL_STEPS}`;
+            document.getElementById('progress-pct').textContent = `${pct}%`;
+            document.getElementById('progress-fill').style.width = `${pct}%`;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function updateProgress(step) {
-            const pct = Math.round(((step - 1) / TOTAL_QUESTIONS) * 100);
-            document.getElementById('progress-label').textContent = `Question ${step} of ${TOTAL_QUESTIONS}`;
-            document.getElementById('progress-pct').textContent = `${pct}%`;
-            document.getElementById('progress-bar').style.width = `${pct}%`;
+        function disqualify(step) {
+            disqualified = true;
+            disqStep = step;
+            showResults();
         }
 
         function handleQ1(el) {
             answers.orgType = el.value;
-            if (el.value === 'residential') {
-                disqualified = true;
-                disqualifiedStep = 1;
-                showResults();
-            } else {
-                setTimeout(() => showStep(2), 250);
-            }
+            el.value === 'residential' ? disqualify(1) : setTimeout(() => showStep(2), 200);
         }
-
         function handleQ2(el) {
-            answers.ukRegistered = el.value;
-            if (el.value === 'no') {
-                disqualified = true;
-                disqualifiedStep = 2;
-                showResults();
-            } else {
-                setTimeout(() => showStep(3), 250);
-            }
+            answers.ukReg = el.value;
+            el.value === 'no' ? disqualify(2) : setTimeout(() => showStep(3), 200);
         }
-
         function handleQ3(el) {
             answers.parking = el.value;
-            if (el.value === 'no') {
-                disqualified = true;
-                disqualifiedStep = 3;
-                showResults();
-            } else {
-                setTimeout(() => showStep(4), 250);
-            }
+            el.value === 'no' ? disqualify(3) : setTimeout(() => showStep(4), 200);
         }
-
         function handleQ4(el) {
             answers.permission = el.value;
-            if (el.value === 'no') {
-                disqualified = true;
-                disqualifiedStep = 4;
-                showResults();
-            } else {
-                setTimeout(() => showStep(5), 250);
-            }
+            el.value === 'no' ? disqualify(4) : setTimeout(() => showStep(5), 200);
         }
-
         function handleQ5(el) {
             answers.vehicles = el.value;
-            if (el.value === 'no') {
-                disqualified = true;
-                disqualifiedStep = 5;
-                showResults();
-            } else {
-                setTimeout(() => showStep(6), 250);
-            }
+            el.value === 'no' ? disqualify(5) : setTimeout(() => showStep(6), 200);
         }
-
         function handleQ6(el) {
-            answers.previousClaim = el.value;
+            answers.prevClaim = el.value;
             if (el.value === 'maxed') {
-                disqualified = true;
-                disqualifiedStep = 6;
-                showResults();
+                disqualify(6);
             } else if (el.value === 'partial') {
-                setTimeout(() => showStep(7), 250);
+                setTimeout(() => showStep(7), 200);
             } else {
-                // No previous claim — skip Q7
-                answers.existingSockets = 0;
-                setTimeout(() => {
-                    updateQ8Hint();
-                    showStep(8);
-                }, 250);
+                answers.existing = 0;
+                setTimeout(() => { updateQ8Hint(); showStep(8); }, 200);
             }
         }
-
-        function handleExistingSockets(el) {
-            answers.existingSockets = parseInt(el.value) || 0;
-        }
-
         function advanceFromQ7() {
-            answers.existingSockets = parseInt(document.getElementById('existing-sockets').value) || 0;
+            answers.existing = parseInt(document.getElementById('existing-sockets').value) || 0;
             updateQ8Hint();
             showStep(8);
         }
-
         function updateQ8Hint() {
-            const remaining = MAX_SOCKETS - answers.existingSockets;
+            const rem = MAX_SOCKETS - answers.existing;
             document.getElementById('q8-hint').textContent =
-                `Each socket is eligible for a grant of up to £${GRANT_PER_SOCKET} (75% of cost). You can apply for up to ${remaining} more socket${remaining === 1 ? '' : 's'} (${MAX_SOCKETS} total minus ${answers.existingSockets} already funded).`;
-            const newSocketsInput = document.getElementById('new-sockets');
-            newSocketsInput.max = remaining;
-            if ((parseInt(newSocketsInput.value) || 0) > remaining) newSocketsInput.value = remaining;
-        }
-
-        function handleNewSockets(el) {
-            answers.newSockets = parseInt(el.value) || 1;
+                `Each socket is eligible for up to £${GRANT_CAP} grant (75% of cost). You can apply for up to ${rem} more socket${rem === 1 ? '' : 's'} (${MAX_SOCKETS} total minus ${answers.existing} already funded).`;
+            const inp = document.getElementById('new-sockets');
+            inp.max = rem;
+            if ((parseInt(inp.value) || 0) > rem) inp.value = rem;
         }
 
         function showResults() {
             answers.newSockets = parseInt(document.getElementById('new-sockets')?.value) || answers.newSockets;
+            const capped = Math.min(answers.newSockets, MAX_SOCKETS - answers.existing);
+            const maxGrant = capped * GRANT_CAP;
 
-            document.getElementById('progress-container').classList.add('hidden');
-            document.getElementById('steps-container').classList.add('hidden');
+            document.getElementById('progress-wrap').classList.add('hidden');
+            document.getElementById('steps-wrap').querySelectorAll('.card').forEach(c => c.classList.add('hidden'));
             document.getElementById('results').classList.remove('hidden');
 
-            const eligible = !disqualified;
-            const cappedSockets = Math.min(answers.newSockets, MAX_SOCKETS - answers.existingSockets);
-            const maxGrant = cappedSockets * GRANT_PER_SOCKET;
-
-            // Verdict banner
-            const verdictEl = document.getElementById('result-verdict');
-            if (eligible) {
-                verdictEl.className = 'rounded-xl p-6 border-2 bg-green-50 border-green-400';
-                verdictEl.innerHTML = `
-                    <div class="flex items-start gap-3">
-                        <span class="text-3xl">✅</span>
-                        <div>
-                            <h2 class="text-lg font-bold text-green-800">You appear to be eligible</h2>
-                            <p class="text-sm text-green-700 mt-1">Based on your answers, your organisation meets the key criteria for the Workplace Charging Scheme. You could claim a grant of up to <strong>£${maxGrant.toLocaleString()}</strong> for ${cappedSockets} socket${cappedSockets === 1 ? '' : 's'}.</p>
-                        </div>
-                    </div>`;
-            } else {
-                verdictEl.className = 'rounded-xl p-6 border-2 bg-red-50 border-red-400';
-                verdictEl.innerHTML = `
-                    <div class="flex items-start gap-3">
-                        <span class="text-3xl">❌</span>
-                        <div>
-                            <h2 class="text-lg font-bold text-red-800">Not eligible based on your answers</h2>
-                            <p class="text-sm text-red-700 mt-1">One or more of your answers indicates you do not currently meet the WCS eligibility requirements. See the summary below for details.</p>
-                        </div>
-                    </div>`;
-            }
-
-            // Checks summary
-            const checks = buildChecks(eligible, cappedSockets);
-            document.getElementById('result-checks').innerHTML = checks;
-
-            // Grant estimate (only if eligible)
-            if (eligible) {
-                document.getElementById('grant-estimate').classList.remove('hidden');
-                const estimateLow  = Math.round(cappedSockets * 300);   // modest install cost example
-                const estimateHigh = cappedSockets * GRANT_PER_SOCKET;
-                document.getElementById('grant-detail').innerHTML = `
-                    <div class="grid grid-cols-2 gap-4 text-center mb-4">
-                        <div class="bg-green-50 rounded-lg p-4">
-                            <div class="text-2xl font-bold text-green-700">£${estimateHigh.toLocaleString()}</div>
-                            <div class="text-xs text-gray-600 mt-1">Maximum grant (${cappedSockets} socket${cappedSockets !== 1 ? 's' : ''} × £${GRANT_PER_SOCKET})</div>
-                        </div>
-                        <div class="bg-blue-50 rounded-lg p-4">
-                            <div class="text-2xl font-bold text-blue-700">${cappedSockets}</div>
-                            <div class="text-xs text-gray-600 mt-1">Sockets eligible for funding</div>
-                        </div>
+            // Verdict
+            const vEl = document.getElementById('verdict-banner');
+            if (!disqualified) {
+                vEl.innerHTML = `<div class="verdict verdict-pass">
+                    <div class="verdict-icon">✅</div>
+                    <div>
+                        <div class="verdict-title">You appear to be eligible</div>
+                        <div class="verdict-body">Based on your answers, your organisation meets the key WCS criteria. You could claim a grant of up to <strong>£${maxGrant.toLocaleString()}</strong> for ${capped} socket${capped !== 1 ? 's' : ''}.</div>
                     </div>
-                    <table class="w-full text-sm text-gray-700">
-                        <tbody>
-                            <tr class="border-b border-gray-100"><td class="py-1 text-gray-500">Grant rate</td><td class="py-1 text-right font-medium">75% of eligible costs</td></tr>
-                            <tr class="border-b border-gray-100"><td class="py-1 text-gray-500">Max per socket</td><td class="py-1 text-right font-medium">£${GRANT_PER_SOCKET}</td></tr>
-                            <tr class="border-b border-gray-100"><td class="py-1 text-gray-500">Sockets</td><td class="py-1 text-right font-medium">${cappedSockets}</td></tr>
-                            <tr><td class="py-1 text-gray-500 font-medium">Maximum grant total</td><td class="py-1 text-right font-bold text-green-700">£${estimateHigh.toLocaleString()}</td></tr>
-                        </tbody>
-                    </table>`;
+                </div>`;
+
+                // Grant cards
+                const gcEl = document.getElementById('grant-cards');
+                gcEl.classList.remove('hidden');
+                gcEl.innerHTML = `
+                    <div class="result-card">
+                        <div class="result-card-value">£${maxGrant.toLocaleString()}</div>
+                        <div class="result-card-label">Maximum grant</div>
+                    </div>
+                    <div class="result-card">
+                        <div class="result-card-value">${capped}</div>
+                        <div class="result-card-label">Eligible sockets</div>
+                    </div>`;
+
+                // Next steps
+                const nsEl = document.getElementById('next-steps-wrap');
+                nsEl.classList.remove('hidden');
+                document.getElementById('next-steps-list').innerHTML = [
+                    `Find an <a href="https://www.gov.uk/government/publications/workplace-charging-scheme-authorised-installers" target="_blank">OZEV-authorised installer</a> — you must use one to qualify.`,
+                    `Get a quote for supply and installation of the charge points.`,
+                    `Your installer applies for the WCS voucher on your behalf <em>before</em> installation begins.`,
+                    `Once approved, installation takes place and the grant is deducted from your invoice.`,
+                    `Keep records — OZEV may audit the installation after completion.`
+                ].map((s, i) => `<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('');
+            } else {
+                vEl.innerHTML = `<div class="verdict verdict-fail">
+                    <div class="verdict-icon">❌</div>
+                    <div>
+                        <div class="verdict-title">Not eligible based on your answers</div>
+                        <div class="verdict-body">One of your answers indicates you do not currently meet the WCS requirements. See the summary below for details and guidance.</div>
+                    </div>
+                </div>`;
+
+                // Not-eligible guidance
+                const guidance = {
+                    1: `The WCS is only available to businesses, charities, and public sector bodies. For residential properties, consider the <a href="https://www.gov.uk/ev-chargepoint-grant-household" target="_blank">EV Chargepoint Grant</a> instead.`,
+                    2: `Your organisation must be UK-registered and the installation must be at a UK site.`,
+                    3: `The charge point must be installed in dedicated off-street parking. On-street installs are not eligible.`,
+                    4: `Written landlord permission is a requirement. It is worth approaching your landlord — EV charging is increasingly seen as a property amenity.`,
+                    5: `At least one eligible business vehicle is required. Review the <a href="https://www.gov.uk/guidance/workplace-charging-scheme-guidance-for-applicants" target="_blank">OZEV guidance</a> for the full list.`,
+                    6: `You have reached the 40-socket cap under the WCS. No further grant funding is available under this scheme at this site.`
+                };
+                const nsEl = document.getElementById('next-steps-wrap');
+                nsEl.classList.remove('hidden');
+                document.getElementById('next-steps-list').innerHTML =
+                    `<li><span class="step-num">!</span><span>${guidance[disqStep]}</span></li>`;
             }
 
-            // Next steps
-            const steps = buildNextSteps(eligible);
-            document.getElementById('next-steps').innerHTML = steps;
-
+            // Checks
+            document.getElementById('checks-list').innerHTML = buildChecks(capped);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function buildChecks(eligible, cappedSockets) {
+        function buildChecks(capped) {
             const rows = [];
+            const orgLabels = { business: 'Private business', charity: 'Registered charity', public: 'Public sector body', residential: 'Residential / private individual' };
 
-            const orgLabels = { business: 'Private business', charity: 'Registered charity', public: 'Public sector body', residential: 'Residential / private individual', unsure: 'Organisation type unclear' };
-            const orgPass = answers.orgType && answers.orgType !== 'residential';
-            rows.push(check(orgPass ? 'pass' : 'fail', 'Organisation type', orgPass ? `${orgLabels[answers.orgType]} — eligible` : 'Residential properties and private individuals are not eligible'));
-
-            if (answers.ukRegistered !== null) {
-                rows.push(check(answers.ukRegistered === 'yes' ? 'pass' : 'fail', 'UK registration', answers.ukRegistered === 'yes' ? 'UK registered — eligible' : 'Must be UK-registered with a UK installation site'));
+            if (answers.orgType) {
+                const pass = answers.orgType !== 'residential';
+                rows.push(row(pass ? 'pass' : 'fail', 'Organisation type',
+                    pass ? `${orgLabels[answers.orgType]} — eligible` : 'Residential properties are not eligible'));
             }
-
-            if (answers.parking !== null) {
-                const parkingPass = answers.parking !== 'no';
-                rows.push(check(parkingPass ? (answers.parking === 'shared' ? 'warn' : 'pass') : 'fail', 'Off-street parking',
-                    answers.parking === 'yes' ? 'Dedicated off-street parking confirmed' :
-                    answers.parking === 'shared' ? 'Shared parking — may be eligible; confirm with your installer' :
-                    'No off-street parking — installation site must be off-street'));
+            if (answers.ukReg) {
+                rows.push(row(answers.ukReg === 'yes' ? 'pass' : 'fail', 'UK registration',
+                    answers.ukReg === 'yes' ? 'UK registered — eligible' : 'Must be UK-registered with a UK installation site'));
             }
-
-            if (answers.permission !== null) {
-                const permPass = answers.permission !== 'no';
-                rows.push(check(permPass ? (answers.permission === 'permission' ? 'warn' : 'pass') : 'fail', 'Permission to install',
-                    answers.permission === 'own' ? 'Site owner — no restrictions' :
+            if (answers.parking) {
+                const status = answers.parking === 'yes' ? 'pass' : answers.parking === 'shared' ? 'warn' : 'fail';
+                rows.push(row(status, 'Off-street parking',
+                    answers.parking === 'yes'    ? 'Dedicated off-street parking confirmed' :
+                    answers.parking === 'shared' ? 'Shared car park — may be eligible; confirm with your installer' :
+                                                   'No off-street parking — this is a requirement'));
+            }
+            if (answers.permission) {
+                const status = answers.permission === 'own' ? 'pass' : answers.permission === 'permission' ? 'warn' : 'fail';
+                rows.push(row(status, 'Permission to install',
+                    answers.permission === 'own'        ? 'Site owner — no restrictions' :
                     answers.permission === 'permission' ? 'Leased site — confirm landlord permission in writing before applying' :
-                    'Landlord permission unlikely — this is a requirement'));
+                                                          'Landlord permission unlikely — this is a requirement'));
             }
-
-            if (answers.vehicles !== null) {
-                rows.push(check(answers.vehicles === 'yes' ? 'pass' : 'fail', 'Eligible vehicles',
-                    answers.vehicles === 'yes' ? 'Eligible vehicles in use' : 'No eligible vehicles — at least one is required'));
+            if (answers.vehicles) {
+                rows.push(row(answers.vehicles === 'yes' ? 'pass' : 'fail', 'Eligible vehicles',
+                    answers.vehicles === 'yes' ? 'Eligible vehicles in business use' : 'No eligible vehicles — at least one required'));
             }
-
-            if (answers.previousClaim !== null) {
-                const claimPass = answers.previousClaim !== 'maxed';
-                rows.push(check(claimPass ? (answers.previousClaim === 'partial' ? 'warn' : 'pass') : 'fail', 'WCS socket cap',
-                    answers.previousClaim === 'no' ? 'No previous claims — full 40 sockets available' :
-                    answers.previousClaim === 'partial' ? `Previous claims exist — ${MAX_SOCKETS - answers.existingSockets} sockets remaining` :
-                    'Already at 40-socket limit — no further WCS funding available'));
+            if (answers.prevClaim) {
+                const status = answers.prevClaim === 'no' ? 'pass' : answers.prevClaim === 'partial' ? 'warn' : 'fail';
+                rows.push(row(status, 'WCS socket cap',
+                    answers.prevClaim === 'no'      ? 'No previous claims — full 40 sockets available' :
+                    answers.prevClaim === 'partial' ? `Previous claims: ${MAX_SOCKETS - answers.existing} sockets remaining` :
+                                                      'Already at 40-socket limit — no further WCS funding available'));
             }
-
-            if (eligible && cappedSockets > 0) {
-                rows.push(check('pass', 'Sockets to fund', `${cappedSockets} socket${cappedSockets !== 1 ? 's' : ''} eligible — maximum grant £${(cappedSockets * GRANT_PER_SOCKET).toLocaleString()}`));
+            if (!disqualified && capped > 0) {
+                rows.push(row('pass', 'Eligible sockets', `${capped} socket${capped !== 1 ? 's' : ''} — maximum grant £${(capped * GRANT_CAP).toLocaleString()}`));
             }
-
             return rows.join('');
         }
 
-        function check(status, label, detail) {
-            const icon = status === 'pass' ? '✅' : status === 'warn' ? '⚠️' : '❌';
-            const color = status === 'pass' ? 'text-green-700' : status === 'warn' ? 'text-amber-700' : 'text-red-700';
-            return `<div class="flex items-start gap-2 py-2 border-b border-gray-100 last:border-0">
-                <span class="mt-0.5 text-base leading-none">${icon}</span>
-                <div>
-                    <span class="font-medium text-gray-800">${label}: </span>
-                    <span class="${color}">${detail}</span>
-                </div>
+        function row(status, name, detail) {
+            const icons   = { pass: '✅', warn: '⚠️', fail: '❌' };
+            const classes = { pass: 'check-detail-pass', warn: 'check-detail-warn', fail: 'check-detail-fail' };
+            return `<div class="check-item">
+                <span class="check-icon">${icons[status]}</span>
+                <div><span class="check-name">${name}: </span><span class="${classes[status]}">${detail}</span></div>
             </div>`;
         }
 
-        function buildNextSteps(eligible) {
-            if (!eligible) {
-                const reason = {
-                    1: 'The WCS is only available to businesses, charities, and public sector bodies. Residential installs may qualify under the <a href="https://www.gov.uk/ev-chargepoint-grant-household" target="_blank" class="underline">EV Chargepoint Grant</a> instead.',
-                    2: 'Your organisation must be UK-registered and the installation must be at a UK site.',
-                    3: 'The charge point must be installed in off-street parking. On-street installs are not eligible.',
-                    4: 'You will need written landlord permission before you can apply. Consider approaching your landlord — many are open to EV charging as an amenity.',
-                    5: 'You must have at least one eligible business vehicle. Review the <a href="https://www.gov.uk/guidance/workplace-charging-scheme-guidance-for-applicants" target="_blank" class="underline">OZEV guidance</a> for the full eligible vehicle list.',
-                    6: 'You have reached the 40-socket cap under the WCS. No further grant funding is available under this scheme at this site.'
-                };
-                return `<p>${reason[disqualifiedStep] || 'Review the eligibility criteria on gov.uk before applying.'}</p>`;
-            }
-
-            return `<ol class="list-decimal list-inside space-y-1">
-                <li>Find an <a href="https://www.gov.uk/government/publications/workplace-charging-scheme-authorised-installers" target="_blank" class="underline font-medium">OZEV-authorised installer</a> — you must use one to qualify for the grant.</li>
-                <li>Get a quote for supply and installation of the charge points.</li>
-                <li>Your installer will apply for the WCS voucher on your behalf before installation begins.</li>
-                <li>Once approved, installation takes place and the grant is deducted from your final invoice.</li>
-                <li>Keep records — you may be audited by OZEV after installation.</li>
-            </ol>`;
-        }
-
         function resetChecker() {
-            answers = { orgType: null, ukRegistered: null, parking: null, permission: null, vehicles: null, previousClaim: null, existingSockets: 0, newSockets: 4 };
-            disqualified = false;
-            disqualifiedStep = null;
-
-            // Clear all radio inputs
+            answers = { orgType: null, ukReg: null, parking: null, permission: null, vehicles: null, prevClaim: null, existing: 0, newSockets: 4 };
+            disqualified = false; disqStep = null;
             document.querySelectorAll('input[type=radio]').forEach(r => r.checked = false);
             document.getElementById('existing-sockets').value = 0;
             document.getElementById('new-sockets').value = 4;
-
             document.getElementById('results').classList.add('hidden');
-            document.getElementById('grant-estimate').classList.add('hidden');
+            document.getElementById('grant-cards').classList.add('hidden');
+            document.getElementById('next-steps-wrap').classList.add('hidden');
+            document.getElementById('progress-wrap').classList.add('hidden');
             document.getElementById('intro').classList.remove('hidden');
-            document.getElementById('progress-container').classList.add('hidden');
-            document.getElementById('steps-container').classList.add('hidden');
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
-
 </body>
 </html>
