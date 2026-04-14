@@ -520,11 +520,11 @@
 
             <div id="step-5" class="card hidden">
                 <div class="q-label">Question 5 of 8</div>
-                <div class="q-title">Does your organisation use eligible vehicles for business purposes?</div>
-                <div class="q-hint">At least one eligible vehicle must be used in connection with the business. Eligible types: cars, motorcycles, mopeds, vans, taxis / PHVs, minibuses, HGVs.</div>
+                <div class="q-title">Do any of your employees drive an eligible plug-in vehicle?</div>
+                <div class="q-hint">At least one employee must use (or intend to use) an eligible plug-in vehicle — this includes their own privately-owned car used for commuting. It does not need to be a company or fleet vehicle. Eligible types: cars, motorcycles, mopeds, vans, taxis / PHVs, minibuses, HGVs.</div>
                 <div class="options">
-                    <label class="option"><input type="radio" name="q5" value="yes" onchange="handleQ5(this)"> Yes — staff or fleet vehicles are used for work</label>
-                    <label class="option"><input type="radio" name="q5" value="no"  onchange="handleQ5(this)"> No — no eligible vehicles used for business purposes</label>
+                    <label class="option"><input type="radio" name="q5" value="yes" onchange="handleQ5(this)"> Yes — at least one employee drives or plans to drive an eligible plug-in vehicle</label>
+                    <label class="option"><input type="radio" name="q5" value="no"  onchange="handleQ5(this)"> No — no employees use eligible plug-in vehicles</label>
                 </div>
             </div>
 
@@ -730,7 +730,7 @@
                     2: `Your organisation must be UK-registered and the installation must be at a UK site.`,
                     3: `The charge point must be installed in dedicated off-street parking. On-street installs are not eligible.`,
                     4: `Written landlord permission is a requirement. It is worth approaching your landlord — EV charging is increasingly seen as a property amenity.`,
-                    5: `At least one eligible business vehicle is required. Review the <a href="https://www.gov.uk/guidance/workplace-charging-scheme-guidance-for-applicants" target="_blank">OZEV guidance</a> for the full list.`,
+                    5: `At least one employee must drive (or plan to drive) an eligible plug-in vehicle — this includes their own privately-owned car. Review the <a href="https://www.gov.uk/guidance/workplace-charging-scheme-guidance-for-applicants" target="_blank">OZEV guidance</a> for the full eligible vehicle list.`,
                     6: `You have reached the 40-socket cap under the WCS. No further grant funding is available under this scheme at this site.`
                 };
                 const nsEl = document.getElementById('next-steps-wrap');
@@ -773,7 +773,7 @@
             }
             if (answers.vehicles) {
                 rows.push(row(answers.vehicles === 'yes' ? 'pass' : 'fail', 'Eligible vehicles',
-                    answers.vehicles === 'yes' ? 'Eligible vehicles in business use' : 'No eligible vehicles — at least one required'));
+                    answers.vehicles === 'yes' ? 'At least one employee drives an eligible plug-in vehicle' : 'No eligible vehicles — at least one employee must drive a plug-in vehicle'));
             }
             if (answers.prevClaim) {
                 const status = answers.prevClaim === 'no' ? 'pass' : answers.prevClaim === 'partial' ? 'warn' : 'fail';
