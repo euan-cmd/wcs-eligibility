@@ -743,16 +743,26 @@
                         <div class="result-card-label">Eligible sockets</div>
                     </div>`;
 
+                // Contextual warnings based on answers
+                const warnings = [];
+                if (answers.parking === 'shared') warnings.push(`⚠️ Your car park is shared — confirm with your building management or other tenants that installation is permitted before proceeding.`);
+                if (answers.permission === 'permission') warnings.push(`⚠️ You lease your site — obtain written permission from your landlord before applying. Without it your application cannot proceed.`);
+
                 // Next steps
-                const nsEl = document.getElementById('next-steps-wrap');
-                nsEl.classList.remove('hidden');
-                document.getElementById('next-steps-list').innerHTML = [
-                    `Find an <a href="https://www.gov.uk/government/publications/workplace-charging-scheme-authorised-installers" target="_blank">OZEV-authorised installer</a> — you must use one to qualify.`,
+                const steps = [
+                    `Consider the <strong>Voqa One</strong> — find out if it's the right EV charger for your location at <a href="https://www.voqa.com" target="_blank">voqa.com</a>, or <a href="https://calendar.app.google/C919wsfwk71WB3Qo6" target="_blank">book a call</a> to discuss your requirements.`,
+                    `Find an <a href="https://www.gov.uk/government/publications/workplace-charging-scheme-authorised-installers" target="_blank">OZEV-authorised installer</a> — you must use one to qualify for the grant.`,
                     `Get a quote for supply and installation of the charge points.`,
                     `Your installer applies for the WCS voucher on your behalf <em>before</em> installation begins.`,
                     `Once approved, installation takes place and the grant is deducted from your invoice.`,
                     `Keep records — OZEV may audit the installation after completion.`
-                ].map((s, i) => `<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('');
+                ];
+
+                const nsEl = document.getElementById('next-steps-wrap');
+                nsEl.classList.remove('hidden');
+                document.getElementById('next-steps-list').innerHTML =
+                    warnings.map(w => `<li style="background:rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;margin-bottom:4px;"><span style="flex-shrink:0">⚠️</span><span>${w.replace('⚠️ ','')}</span></li>`).join('') +
+                    steps.map((s, i) => `<li><span class="step-num">${i+1}</span><span>${s}</span></li>`).join('');
             } else {
                 vEl.innerHTML = `<div class="verdict verdict-fail">
                     <div class="verdict-icon">❌</div>
