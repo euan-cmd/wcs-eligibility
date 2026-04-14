@@ -293,6 +293,23 @@
         }
         .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,92,128,0.3); }
 
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: none;
+            color: #6b7280;
+            padding: 10px 0;
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            font-family: inherit;
+            transition: color 0.2s ease;
+            margin-top: 16px;
+        }
+        .btn-back:hover { color: var(--primary); }
+
         .btn-secondary {
             display: inline-flex;
             align-items: center;
@@ -494,6 +511,7 @@
                     <label class="option"><input type="radio" name="q2" value="yes" onchange="handleQ2(this)"> Yes — UK registered with a UK installation site</label>
                     <label class="option"><input type="radio" name="q2" value="no"  onchange="handleQ2(this)"> No — overseas or installation outside the UK</label>
                 </div>
+                <button onclick="goBack(2)" class="btn-back">← Back</button>
             </div>
 
             <div id="step-3" class="card hidden">
@@ -505,6 +523,7 @@
                     <label class="option"><input type="radio" name="q3" value="shared" onchange="handleQ3(this)"> Shared car park (e.g. shared with other tenants in a building)</label>
                     <label class="option"><input type="radio" name="q3" value="no"     onchange="handleQ3(this)"> No — only on-street or public parking available</label>
                 </div>
+                <button onclick="goBack(3)" class="btn-back">← Back</button>
             </div>
 
             <div id="step-4" class="card hidden">
@@ -516,6 +535,7 @@
                     <label class="option"><input type="radio" name="q4" value="permission" onchange="handleQ4(this)"> We lease — and have (or can get) landlord permission</label>
                     <label class="option"><input type="radio" name="q4" value="no"         onchange="handleQ4(this)"> We lease — and landlord permission is unlikely</label>
                 </div>
+                <button onclick="goBack(4)" class="btn-back">← Back</button>
             </div>
 
             <div id="step-5" class="card hidden">
@@ -526,6 +546,7 @@
                     <label class="option"><input type="radio" name="q5" value="yes" onchange="handleQ5(this)"> Yes — at least one employee drives or plans to drive an eligible plug-in vehicle</label>
                     <label class="option"><input type="radio" name="q5" value="no"  onchange="handleQ5(this)"> No — no employees use eligible plug-in vehicles</label>
                 </div>
+                <button onclick="goBack(5)" class="btn-back">← Back</button>
             </div>
 
             <div id="step-6" class="card hidden">
@@ -537,6 +558,7 @@
                     <label class="option"><input type="radio" name="q6" value="partial" onchange="handleQ6(this)"> Yes — we have claimed before but have fewer than 40 sockets</label>
                     <label class="option"><input type="radio" name="q6" value="maxed"   onchange="handleQ6(this)"> Yes — we already have 40 or more WCS-funded sockets</label>
                 </div>
+                <button onclick="goBack(6)" class="btn-back">← Back</button>
             </div>
 
             <div id="step-7" class="card hidden">
@@ -547,7 +569,10 @@
                     <input type="number" id="existing-sockets" class="num-input" min="0" max="39" value="0">
                     <span class="num-label">sockets already funded</span>
                 </div>
-                <button onclick="advanceFromQ7()" class="btn-primary">Continue →</button>
+                <div style="display:flex; gap:12px; margin-top:20px;">
+                    <button onclick="goBack(7)" class="btn-back">← Back</button>
+                    <button onclick="advanceFromQ7()" class="btn-primary">Continue →</button>
+                </div>
             </div>
 
             <div id="step-8" class="card hidden">
@@ -558,7 +583,10 @@
                     <input type="number" id="new-sockets" class="num-input" min="1" max="40" value="4">
                     <span class="num-label">new sockets</span>
                 </div>
-                <button onclick="showResults()" class="btn-primary">See Results →</button>
+                <div style="display:flex; gap:12px; margin-top:20px;">
+                    <button onclick="goBack(8)" class="btn-back">← Back</button>
+                    <button onclick="showResults()" class="btn-primary">See Results →</button>
+                </div>
             </div>
 
         </div>
@@ -602,6 +630,20 @@
         let answers = { orgType: null, ukReg: null, parking: null, permission: null, vehicles: null, prevClaim: null, existing: 0, newSockets: 4 };
         let disqualified = false;
         let disqStep = null;
+
+        // Map each step to the previous step and the answer key to clear
+        const stepBack = { 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 7: 6, 8: 6 };
+        const stepAnswerKey = { 2: 'ukReg', 3: 'parking', 4: 'permission', 5: 'vehicles', 6: 'prevClaim', 7: 'prevClaim', 8: null };
+
+        function goBack(fromStep) {
+            // Clear current step's answer and radio selection
+            const key = stepAnswerKey[fromStep];
+            if (key) answers[key] = null;
+            document.querySelectorAll(`input[name="q${fromStep}"]`).forEach(r => r.checked = false);
+            // Reset disqualified state in case user is going back from a dead end
+            disqualified = false; disqStep = null;
+            showStep(stepBack[fromStep]);
+        }
 
         function startChecker() {
             document.getElementById('intro').classList.add('hidden');
